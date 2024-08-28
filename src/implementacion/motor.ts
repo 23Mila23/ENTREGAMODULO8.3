@@ -1,4 +1,4 @@
-import { Carta } from "./model";
+import { Carta, Tablero } from "./model";
 /*
 En el motor nos va a hacer falta un método para barajar cartas
 */
@@ -21,7 +21,9 @@ const barajarCartas = (cartas : Carta[]): Carta[] => {
     Una carta se puede voltear si no está encontrada y no está ya volteada, o no hay dos cartas ya volteadas
   */
   const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number ): boolean => {
-    //..
+    //PARA MAÑANA: el indice es mirar que posicion del array de cartas se puede voltear tipo: mira si la  posicion uno se puede voltear o no. Las cartas están dentro del tablero. 
+    //tendria que ser tablero.cartas y coger la posicion del array que seria el indice
+
   }
   
   const voltearLaCarta = (tablero: Tablero, indice: number) : void => {
@@ -61,5 +63,4 @@ const barajarCartas = (cartas : Carta[]): Carta[] => {
   */
   
   export const iniciaPartida = (tablero: Tablero): void => {
-    //...
-  };
+    //...Aqui actualizamos la carta de tableros con el array barajar cartas
