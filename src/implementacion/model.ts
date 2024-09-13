@@ -56,17 +56,18 @@ export interface Carta {
         return cartaInicial
     })
 
-    const cartasDuplicadas = [...arrayCartas, ...arrayCartas];
+    const arrayCartas2 : Carta[] = infoCartas.map((carta) => {
+      const cartaInicial = crearCartaInicial(carta.idFoto, carta.imagen)
+      return cartaInicial
+  })
+
+    const cartasDuplicadas = [...arrayCartas, ...arrayCartas2];
 
     return cartasDuplicadas
   };
   
   export let cartas: Carta[] = crearColeccionDeCartasInicial(infoCartas);
-  
-  /*
-    Aquí definimos el tipo de estado de la partida, la idea es que cuando empiece la partida todas las cartas estén boca abajo y si se hacen click sobre ellas no se volteen.
-    EstadoPartida = "PartidaNoIniciada", una vez que se pulse Iniciar partida el estado de la partida cambiaría a "CeroCartasLevantadas" y así sucesivamente.
-  */
+
   
   type EstadoPartida =
     | "PartidaNoIniciada"

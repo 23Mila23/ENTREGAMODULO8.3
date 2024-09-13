@@ -1,5 +1,5 @@
 import { Carta, Tablero } from "./model";
-
+import { pintarDivs, reiniciarEstadoCarta } from "./ui";
 
 const barajarCartas = (cartas: Carta[]): Carta[] => {
   const cartasBarajadas = [...cartas];
@@ -15,7 +15,7 @@ const barajarCartas = (cartas: Carta[]): Carta[] => {
 
 const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number): boolean => {
   const carta = tablero.cartas[indice];
-
+  console.log(carta) //esto creo que lo hemos puesto aqui para probar cosas
   if (carta.encontrada) {
     return false;
   }
@@ -23,6 +23,8 @@ const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number): boolean => {
   if (carta.estaVuelta) {
     return false;
   }
+
+  console.log(tablero.estadoPartida) //esto creo que lo hemos puesto aqui para probar cosas
 
   if (tablero.estadoPartida === "DosCartasLevantadas") {
     return false;
@@ -60,6 +62,10 @@ const voltearLaCarta = (tablero: Tablero, indice: number): void => {
   if (!sePuedeVoltearLaCarta(tablero, indice)) {
     return;
   }
+  console.log("HERE") //TEST TEST
+
+  const cartasDOM = document.getElementsByClassName("cardContainer");
+  cartasDOM[indice].classList.toggle("flipped");
 
   carta.estaVuelta = true;
 
@@ -72,7 +78,7 @@ const voltearLaCarta = (tablero: Tablero, indice: number): void => {
 
     if (
       sonPareja(
-        tablero.indiceCartaVolteadaA!,
+        tablero.indiceCartaVolteadaA!, 
         tablero.indiceCartaVolteadaB,
         tablero
       )
@@ -99,7 +105,7 @@ const voltearLaCarta = (tablero: Tablero, indice: number): void => {
 export const esPartidaCompleta = (tablero: Tablero): boolean => {
   const cartas = tablero.cartas;
   const todasEncontradas = cartas.every((carta) => {
-    return carta.encontrada;
+    return carta.encontrada; 
   });
   return todasEncontradas;
 };
@@ -113,9 +119,11 @@ const parejaEncontrada = (
   const cartaB = tablero.cartas[indiceB];
   cartaA.encontrada = true;
   cartaB.encontrada = true;
-  const partidaCompleta = esPartidaCompleta(tablero); // hacer cosas para terminar el juego
+  const partidaCompleta = esPartidaCompleta(tablero); 
+  if(partidaCompleta){
+    alert("You win") // DE MOMENTO LUEGO YA TOQUETEAMOS CSS PARA QUE SALGA BONITO CON DIVS ETC Z-INDEX PARA PONER EL YOU WIN POR ENCIMA DE TODO POR EJEMPLO
+  }
 };
-
 
 const parejaNoEncontrada = (
   tablero: Tablero,
@@ -124,20 +132,27 @@ const parejaNoEncontrada = (
 ): void => {
   const cartaA = tablero.cartas[indiceA];
   const cartaB = tablero.cartas[indiceB];
-
-  cartaA.estaVuelta = false;
-  cartaB.estaVuelta = false;
-  //AQUI SE PUEDE HACER UN SET TIMEOUT PARA HACER QUE SE GIREN EN LA UI CON .REMOVE("CLASE")
+  setTimeout(() => {
+    reiniciarEstadoCarta(indiceA)
+    cartaA.estaVuelta = false;
+    reiniciarEstadoCarta(indiceB)
+    cartaB.estaVuelta = false;
+  }, 2000)
+  
 };
-
 
 export const iniciaPartida = (tablero: Tablero): void => {
- tablero.cartas = barajarCartas(tablero.cartas);
- //FALTA UI PARA PINTAR CARTAS
- //FALTAN LISTENERS DEL CLICK DENTRO IRIA LO SIGUIENTE:
- voltearLaCarta(tablero,indice)
+  tablero.estadoPartida = "CeroCartasLevantadas";
+  tablero.cartas = barajarCartas(tablero.cartas); 
+  pintarDivs(tablero.cartas);
+  //FALTAN HCER FUNCION DEL CLICK DENTRO IRIA LO SIGUIENTE:
+  const cardContainers = document.getElementsByClassName("cardContainer");
 
-
-
+  Array.from(cardContainers).forEach((container) => { 
+    container.addEventListener("click", () => {
+      voltearLaCarta(tablero, parseInt(container.getAttribute("data-indice-id")!));
+    });
+  });
 };
 
+//aparte de ponerlo bonito hay que crear un event listener del boton nueva partida que llame a la funcion iniciarPartida y haga todo lo demas. voltearLaCarta comprueba todo. 
