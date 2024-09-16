@@ -1,5 +1,5 @@
-import { Carta, Tablero } from "./model";
-import { pintarDivs, reiniciarEstadoCarta } from "./ui";
+import { Carta, Tablero } from './model';
+import { closeModal, hideNuevaPartida, openModal, pintarDivs, reiniciarEstadoCarta, showTablero} from './ui';
 
 const barajarCartas = (cartas: Carta[]): Carta[] => {
   const cartasBarajadas = [...cartas];
@@ -15,7 +15,6 @@ const barajarCartas = (cartas: Carta[]): Carta[] => {
 
 const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number): boolean => {
   const carta = tablero.cartas[indice];
-  console.log(carta) //esto creo que lo hemos puesto aqui para probar cosas
   if (carta.encontrada) {
     return false;
   }
@@ -24,17 +23,15 @@ const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number): boolean => {
     return false;
   }
 
-  console.log(tablero.estadoPartida) //esto creo que lo hemos puesto aqui para probar cosas
-
-  if (tablero.estadoPartida === "DosCartasLevantadas") {
+  if (tablero.estadoPartida === 'DosCartasLevantadas') {
     return false;
   }
 
-  if (tablero.estadoPartida === "PartidaNoIniciada") {
+  if (tablero.estadoPartida === 'PartidaNoIniciada') {
     return false;
   }
 
-  if (tablero.estadoPartida === "PartidaCompleta") {
+  if (tablero.estadoPartida === 'PartidaCompleta') {
     return false;
   }
 
@@ -62,50 +59,51 @@ const voltearLaCarta = (tablero: Tablero, indice: number): void => {
   if (!sePuedeVoltearLaCarta(tablero, indice)) {
     return;
   }
-  console.log("HERE") //TEST TEST
 
-  const cartasDOM = document.getElementsByClassName("cardContainer");
-  cartasDOM[indice].classList.toggle("flipped");
+  const cartasDOM = document.getElementsByClassName('cardContainer');
 
   carta.estaVuelta = true;
 
-  if (tablero.estadoPartida === "CeroCartasLevantadas") {
-    tablero.estadoPartida = "UnaCartaLevantada";
+  if (tablero.estadoPartida === 'CeroCartasLevantadas') {
+    cartasDOM[indice].classList.toggle('flipped');
+    tablero.estadoPartida = 'UnaCartaLevantada';
     tablero.indiceCartaVolteadaA = indice;
-  } else if (tablero.estadoPartida === "UnaCartaLevantada") {
-    tablero.estadoPartida = "DosCartasLevantadas";
+  } else if (tablero.estadoPartida === 'UnaCartaLevantada') {
+    cartasDOM[indice].classList.toggle('flipped');
+    tablero.estadoPartida = 'DosCartasLevantadas';
     tablero.indiceCartaVolteadaB = indice;
 
     if (
       sonPareja(
-        tablero.indiceCartaVolteadaA!, 
+        tablero.indiceCartaVolteadaA!,
         tablero.indiceCartaVolteadaB,
         tablero
       )
     ) {
       parejaEncontrada(
-        tablero,
-        tablero.indiceCartaVolteadaA!,
-        tablero.indiceCartaVolteadaB
-      );
+          tablero,
+          tablero.indiceCartaVolteadaA!,
+          tablero.indiceCartaVolteadaB!
+        );
+        tablero.estadoPartida = 'CeroCartasLevantadas';
+     
     } else {
-      parejaNoEncontrada(
-        tablero,
-        tablero.indiceCartaVolteadaA!,
-        tablero.indiceCartaVolteadaB
-      );
+      setTimeout(() => {1
+        parejaNoEncontrada(
+          tablero,
+          tablero.indiceCartaVolteadaA!,
+          tablero.indiceCartaVolteadaB!
+        );
+        tablero.estadoPartida = 'CeroCartasLevantadas';
+      }, 1000);
     }
-
-    tablero.estadoPartida = "CeroCartasLevantadas";
-    tablero.indiceCartaVolteadaA = undefined;
-    tablero.indiceCartaVolteadaB = undefined;
   }
 };
 
 export const esPartidaCompleta = (tablero: Tablero): boolean => {
   const cartas = tablero.cartas;
   const todasEncontradas = cartas.every((carta) => {
-    return carta.encontrada; 
+    return carta.encontrada;
   });
   return todasEncontradas;
 };
@@ -119,9 +117,14 @@ const parejaEncontrada = (
   const cartaB = tablero.cartas[indiceB];
   cartaA.encontrada = true;
   cartaB.encontrada = true;
-  const partidaCompleta = esPartidaCompleta(tablero); 
-  if(partidaCompleta){
-    alert("You win") // DE MOMENTO LUEGO YA TOQUETEAMOS CSS PARA QUE SALGA BONITO CON DIVS ETC Z-INDEX PARA PONER EL YOU WIN POR ENCIMA DE TODO POR EJEMPLO
+  const partidaCompleta = esPartidaCompleta(tablero);
+  if (partidaCompleta) {
+   openModal();
+   const span = document.getElementsByClassName("close")[0] as HTMLButtonElement;
+   span.addEventListener("click", () => {
+    closeModal()
+    resetGameLogic(tablero)
+   })
   }
 };
 
@@ -133,26 +136,50 @@ const parejaNoEncontrada = (
   const cartaA = tablero.cartas[indiceA];
   const cartaB = tablero.cartas[indiceB];
   setTimeout(() => {
-    reiniciarEstadoCarta(indiceA)
-    cartaA.estaVuelta = false;
-    reiniciarEstadoCarta(indiceB)
-    cartaB.estaVuelta = false;
-  }, 2000)
-  
+    reiniciarEstadoCarta(indiceA);
+    reiniciarEstadoCarta(indiceB);
+  }, 500);
+  cartaA.estaVuelta = false;
+  cartaB.estaVuelta = false;
 };
 
 export const iniciaPartida = (tablero: Tablero): void => {
-  tablero.estadoPartida = "CeroCartasLevantadas";
-  tablero.cartas = barajarCartas(tablero.cartas); 
+  tablero.estadoPartida = 'CeroCartasLevantadas';
+  tablero.cartas = barajarCartas(tablero.cartas);
   pintarDivs(tablero.cartas);
-  //FALTAN HCER FUNCION DEL CLICK DENTRO IRIA LO SIGUIENTE:
-  const cardContainers = document.getElementsByClassName("cardContainer");
+  clickCartas(tablero);
+};
 
-  Array.from(cardContainers).forEach((container) => { 
-    container.addEventListener("click", () => {
-      voltearLaCarta(tablero, parseInt(container.getAttribute("data-indice-id")!));
+export const clickCartas = (tablero: Tablero) => {
+  const cardContainers = document.getElementsByClassName('cardContainer');
+  Array.from(cardContainers).forEach((container) => {
+    container.addEventListener('click', () => {
+      voltearLaCarta(
+        tablero,
+        parseInt(container.getAttribute('data-indice-id')!)
+      );
     });
   });
 };
 
-//aparte de ponerlo bonito hay que crear un event listener del boton nueva partida que llame a la funcion iniciarPartida y haga todo lo demas. voltearLaCarta comprueba todo. 
+
+
+export const nuevaPartida = (tablero: Tablero) => {
+  const botonNuevaPartida = document.getElementById(
+    'botonNuevaPartida'
+  ) as HTMLButtonElement;
+
+  botonNuevaPartida.addEventListener('click', () => {
+    iniciaPartida(tablero);
+    hideNuevaPartida(); 
+    showTablero()
+  });
+};
+
+export const resetGameLogic = (tablero : Tablero) => {
+  tablero.cartas = tablero.cartas.map((carta) => {
+    carta.encontrada = false;
+    carta.estaVuelta = false;
+    return carta
+  })
+}
